@@ -5,6 +5,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::path::Path;
 use toml::map::Map;
 use toml::Value;
 // #[derive(Deserialize, Debug)]
@@ -109,6 +110,11 @@ pub fn request_to_uri(data: &mut [u8]) -> String {
         req_asvec.push(b.clone());
     }
     String::from_utf8_lossy(&req_asvec).to_string()
+}
+
+pub fn get_body(file_path: &str) -> String {
+    let file_to_serve = find_route(file_path);
+    fs::read_to_string(Path::new(&file_to_serve)).unwrap()
 }
 
 // fn get_route(path: &str, table: Map) -> String {

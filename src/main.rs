@@ -1,10 +1,9 @@
-use libtitan::{find_route, parse_uri, request_to_uri, Response, StatusCode};
+use libtitan::{find_route, get_body, parse_uri, request_to_uri, Response, StatusCode};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::path::Path;
 use std::sync::Arc;
 use std::thread;
 
@@ -13,13 +12,10 @@ fn handle_client(mut stream: TlsStream<TcpStream>) {
     stream.read(&mut data).unwrap();
     let path = &parse_uri(&request_to_uri(&mut data));
     println!("raw path {:?}", path);
-
-    let file_to_serve = find_route(path);
     let mut response = Response::new(StatusCode::Code20);
-    let body = fs::read_to_string(Path::new(&file_to_serve)).unwrap();
+    let body = get_body(path);
     response.set_body(body);
     response.set_meta("text/gemini".to_owned());
-    println!("file requested: {:?}", file_to_serve);
     stream.write(&response.to_bytes()).unwrap();
     stream.shutdown().unwrap();
 }
