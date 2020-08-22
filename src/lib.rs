@@ -1,6 +1,10 @@
 use http::Uri;
+use native_tls::TlsStream;
 use serde_derive::Deserialize;
 use std::fs;
+use std::fs::File;
+use std::io::{Read, Write};
+use std::net::TcpStream;
 use toml::map::Map;
 use toml::Value;
 // #[derive(Deserialize, Debug)]
@@ -12,6 +16,62 @@ use toml::Value;
 // struct Route {
 
 // }
+pub enum StatusCode {
+    Code20,
+    Code51,
+}
+
+impl StatusCode {
+    pub fn code(&self) -> u8 {
+        match *self {
+            StatusCode::Code20 => 20u8,
+            StatusCode::Code51 => 51u8,
+        }
+    }
+}
+
+pub struct Response {
+    pub status: StatusCode,
+    pub body: Option<String>,
+    pub meta: Option<String>,
+}
+
+impl Response {
+    pub fn not_found() -> Response {
+        Response {
+            status: StatusCode::Code51,
+            body: None,
+            meta: None,
+        }
+    }
+    pub fn new(code: StatusCode) -> Response {
+        Response {
+            status: code,
+            body: None,
+            meta: None,
+        }
+    }
+
+    pub fn to_bytes(self) -> Vec<u8> {
+        let meta = match self.meta {
+            Some(v) => v,
+            None => String::new(),
+        };
+        let body = match self.body {
+            Some(v) => v,
+            None => String::new(),
+        };
+        Vec::from(format!("{} {}\r\n{}", self.status.code(), meta, body).as_bytes())
+    }
+
+    pub fn set_body(&mut self, body: String) {
+        self.body = Option::from(body)
+    }
+
+    pub fn set_meta(&mut self, meta: String) {
+        self.meta = Option::from(meta)
+    }
+}
 
 pub fn build_response(body: &[u8]) -> Vec<u8> {
     [format!("{} {}\r\n", 20, "text/gemini").as_bytes(), body].concat()
@@ -38,6 +98,17 @@ pub fn find_route(route: &str) -> String {
     } else {
         String::from("error")
     }
+}
+
+pub fn request_to_uri(data: &mut [u8]) -> String {
+    let mut req_asvec: Vec<u8> = Vec::new();
+    for b in data.iter() {
+        if *b as char == '\r' {
+            break;
+        }
+        req_asvec.push(b.clone());
+    }
+    String::from_utf8_lossy(&req_asvec).to_string()
 }
 
 // fn get_route(path: &str, table: Map) -> String {

@@ -1,39 +1,27 @@
-use libtitan::{build_response, find_route, parse_uri};
+use libtitan::{find_route, parse_uri, request_to_uri, Response, StatusCode};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
-use std::fs::metadata;
+use std::fs;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Write};
-use std::net::{Shutdown, TcpListener, TcpStream};
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
 
 fn handle_client(mut stream: TlsStream<TcpStream>) {
     let mut data = [0 as u8; 1000]; // using 50 byte buffer
-    let mut req_asvec: Vec<u8> = Vec::new();
     stream.read(&mut data).unwrap();
-    for b in data.iter() {
-        if *b as char == '\r' {
-            break;
-        }
-        req_asvec.push(b.clone());
-    }
-    println!("{:?}", String::from_utf8_lossy(&req_asvec));
-    let path = &parse_uri(&String::from_utf8_lossy(&req_asvec));
+    let path = &parse_uri(&request_to_uri(&mut data));
     println!("raw path {:?}", path);
-    // let path = match path == "/" {
-    //     true => "root",
-    //     false => path,
-    // };
-    let file_to_serve = find_route(path);
-    println!("file requested: {:?}", file_to_serve);
-    let mut input = File::open(Path::new(&file_to_serve)).unwrap();
-    // let buffered = BufReader::new(input);
-    let metadata = metadata(&file_to_serve).expect("unable to read metadata");
-    let mut buffer = vec![0; metadata.len() as usize];
-    input.read(&mut buffer).expect("buffer overflow");
 
-    stream.write(&build_response(&buffer)).unwrap();
+    let file_to_serve = find_route(path);
+    let mut response = Response::new(StatusCode::Code20);
+    let body = fs::read_to_string(Path::new(&file_to_serve)).unwrap();
+    response.set_body(body);
+    response.set_meta("text/gemini".to_owned());
+    println!("file requested: {:?}", file_to_serve);
+    stream.write(&response.to_bytes()).unwrap();
+    stream.shutdown().unwrap();
 }
 
 fn main() {
