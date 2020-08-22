@@ -1,0 +1,4 @@
+[routes]
+"/" = "index.gemini" # /
+"/about" = "about.gemini" # /about
+"/who/ami" = "jahziel.gemini" # /who/ami

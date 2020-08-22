@@ -1,0 +1,20 @@
+[package]
+name = "titan"
+version = "0.1.0"
+authors = ["Jahziel Villasana <jahzielv@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "libtitan"
+path = "src/lib.rs"
+
+[[bin]]
+name = "titan"
+path = "src/main.rs"
+
+[dependencies]
+native-tls = "0.2.4"
+serde_derive = "1.0.115"
+serde = "1.0.115"
+toml = "0.5.6"
+http = "0.2.1"

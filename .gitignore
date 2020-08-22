@@ -1,0 +1,6 @@
+/target
+*.gemini
+*.crt
+*.key
+*.pfx
+amfora-linux-386
