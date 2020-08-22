@@ -1,6 +1,5 @@
-use libtitan::{find_route, get_body, parse_uri, request_to_uri, Response, StatusCode};
+use libtitan::{get_body, parse_uri, request_to_uri, Response, StatusCode};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
-use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};

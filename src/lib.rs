@@ -1,22 +1,8 @@
 use http::Uri;
-use native_tls::TlsStream;
-use serde_derive::Deserialize;
 use std::fs;
-use std::fs::File;
-use std::io::{Read, Write};
-use std::net::TcpStream;
 use std::path::Path;
-use toml::map::Map;
 use toml::Value;
-// #[derive(Deserialize, Debug)]
-// struct Config {
-//     routes: ,
-// }
 
-// #[derive(Deserialize, Debug)]
-// struct Route {
-
-// }
 pub enum StatusCode {
     Code20,
     Code51,
