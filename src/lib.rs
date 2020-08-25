@@ -4,17 +4,49 @@ use std::path::Path;
 use toml::Value;
 
 pub enum StatusCode {
+    Input,
+    SensInput,
     Empty,
-    Code20,
-    Code51,
+    Success,
+    RedirTemp,
+    RedirPerm,
+    TempFail,
+    ServerUnavail,
+    CGIErr,
+    ProxyErr,
+    SlowDown,
+    PermFail,
+    NotFound,
+    Gone,
+    ProxReqRef,
+    BadReq,
+    ClientCert,
+    CertNotAuth,
+    InvalidCert,
 }
 
 impl StatusCode {
     pub fn code(&self) -> u8 {
         match *self {
             StatusCode::Empty => 0u8,
-            StatusCode::Code20 => 20u8,
-            StatusCode::Code51 => 51u8,
+            StatusCode::Success => 20u8,
+            StatusCode::NotFound => 51u8,
+            StatusCode::Input => 10u8,
+            StatusCode::SensInput => 11u8,
+            StatusCode::RedirTemp => 30u8,
+            StatusCode::RedirPerm => 31u8,
+            StatusCode::TempFail => 40u8,
+            StatusCode::ServerUnavail => 41u8,
+            StatusCode::CGIErr => 42u8,
+            StatusCode::ProxyErr => 43u8,
+            StatusCode::SlowDown => 43u8,
+            StatusCode::PermFail => 50u8,
+            StatusCode::Gone => 52u8,
+            StatusCode::ProxReqRef => 53u8,
+            StatusCode::BadReq => 59u8,
+            StatusCode::ClientCert => 60u8,
+            StatusCode::CertNotAuth => 61u8,
+            StatusCode::InvalidCert => 63u8,
         }
     }
 }
@@ -28,7 +60,7 @@ pub struct Response {
 impl Response {
     pub fn not_found() -> Response {
         Response {
-            status: StatusCode::Code51,
+            status: StatusCode::NotFound,
             body: None,
             meta: Option::from("File not found".to_owned()),
         }
