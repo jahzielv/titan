@@ -1,0 +1,2 @@
+# Contributing to Titan
+Contributions are welcome! I'm not super experienced with Rust, so there's likely bad code/practices in this project. I'd love to learn from more experienced people, so if you see an issue or just have an idea to contribute, please feel free to open an issue or send a PR! If you want ideas for things to work on, check out the [roadmap](/CHANGELOG.md#Roadmap)!
