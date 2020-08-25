@@ -49,10 +49,10 @@ fn global_handler(t: &Titan, stream: &mut TlsStream<TcpStream>) {
 }
 
 pub fn start(t: &Titan) {
-    let mut file = File::open("certificate.pfx").unwrap();
+    let mut file = File::open("jahzielxyz.pfx").unwrap();
     let mut identity = vec![];
     file.read_to_end(&mut identity).unwrap();
-    let identity = Identity::from_pkcs12(&identity, "password").unwrap();
+    let identity = Identity::from_pkcs12(&identity, &std::env::var("CERT_KEY").unwrap()).unwrap();
     let acceptor = TlsAcceptor::new(identity).unwrap();
     let acceptor = Arc::new(acceptor);
     // let server = Arc::new(t);

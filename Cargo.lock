@@ -426,7 +426,6 @@ name = "titan"
 version = "0.1.0"
 dependencies = [
  "crossbeam",
- "crossbeam-utils",
  "http",
  "native-tls",
  "serde",
