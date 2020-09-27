@@ -1,3 +1,7 @@
+[server_config]
+domain = "jahziel.xyz"
+pfx = "/home/hapax/code/titan/jahzielxyz.pfx"
+
 [routes]
 "/" = "index.gemini" # /
 "/about" = "about.gemini" # /about

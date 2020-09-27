@@ -1,22 +1,29 @@
 use crossbeam::scope;
+use libtitan::StatusCode;
 use libtitan::{parse_uri, request_to_uri, Response};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
 use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::sync::Arc;
+use toml::Value;
 
 type Handler = Box<dyn Fn(&mut Response) + Send + Sync>;
 
 pub struct Titan {
     handlers: HashMap<String, Handler>,
+    pfx_file: String,
+    pfx_password: String,
 }
 
 impl Titan {
     pub fn new() -> Titan {
         Titan {
             handlers: HashMap::new(),
+            pfx_file: String::new(),
+            pfx_password: String::new(),
         }
     }
 
@@ -25,6 +32,41 @@ impl Titan {
             Some(_) => {}
             None => {}
         }
+    }
+
+    pub fn read_config_file(&mut self) {
+        let config_string = fs::read_to_string("Titan.toml").unwrap();
+        let map = config_string.parse::<Value>().unwrap();
+        if let Value::Table(t) = &map["server_config"] {
+            let config_table = t.clone();
+            // println!("{}", config_table["pfx"]);
+            match config_table["pfx"].as_str() {
+                Some(pfx_file) => self.set_pfx_file(pfx_file),
+                None => eprintln!("pfx file not found!"),
+            }
+        };
+
+        // set up routes
+
+        if let Value::Table(t) = &map["routes"] {
+            let routes_table = t.clone();
+            for (key, value) in routes_table {
+                self.get(
+                    &key,
+                    Box::new(move |res| {
+                        let file_to_serve = value.as_str().unwrap();
+                        let file_contents = &fs::read_to_string(file_to_serve).unwrap();
+                        res.set_body(file_contents)
+                            .set_meta("text/gemini")
+                            .set_status(StatusCode::Success);
+                    }),
+                );
+            }
+        }
+    }
+
+    pub fn set_pfx_file(&mut self, file_path: &str) {
+        self.pfx_file = file_path.to_owned();
     }
 }
 
@@ -49,10 +91,12 @@ fn global_handler(t: &Titan, stream: &mut TlsStream<TcpStream>) {
 }
 
 pub fn start(t: &Titan) {
-    let mut file = File::open("jahzielxyz.pfx").unwrap();
+    println!("saved pfx file: {}", t.pfx_file.to_owned());
+    let mut file = File::open(t.pfx_file.to_owned()).unwrap();
     let mut identity = vec![];
     file.read_to_end(&mut identity).unwrap();
-    let identity = Identity::from_pkcs12(&identity, &std::env::var("CERT_KEY").unwrap()).unwrap();
+    let identity =
+        Identity::from_pkcs12(&identity, &std::env::var("TITAN_CERT_KEY").unwrap()).unwrap();
     let acceptor = TlsAcceptor::new(identity).unwrap();
     let acceptor = Arc::new(acceptor);
     // let server = Arc::new(t);

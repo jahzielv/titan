@@ -92,16 +92,19 @@ impl Response {
         Vec::from(format!("{} {}\r\n{}", self.status.code(), meta, body).as_bytes())
     }
 
-    pub fn set_body(&mut self, body: &str) {
-        self.body = Option::from(body.to_owned())
+    pub fn set_body(&mut self, body: &str) -> &mut Response {
+        self.body = Option::from(body.to_owned());
+        self
     }
 
-    pub fn set_meta(&mut self, meta: &str) {
-        self.meta = Option::from(meta.to_owned())
+    pub fn set_meta(&mut self, meta: &str) -> &mut Response {
+        self.meta = Option::from(meta.to_owned());
+        self
     }
 
-    pub fn set_status(&mut self, status: StatusCode) {
-        self.status = status
+    pub fn set_status(&mut self, status: StatusCode) -> &mut Response {
+        self.status = status;
+        self
     }
 }
 
