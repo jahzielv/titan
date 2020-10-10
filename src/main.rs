@@ -1,9 +1,10 @@
 mod titan;
+use failure::Error;
 use titan::Titan;
 
-fn main() {
+fn main() -> Result<(), Error> {
     let mut server: Titan = Titan::new();
-    server.read_config_file();
+    server.read_config_file()?;
 
-    titan::start(&server);
+    Ok(titan::start(&server)?)
 }
